@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#111111">
+  <title>Юмма — подключение ЮMoney</title>
+  <style>
+    :root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;color-scheme:light dark}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100svh;display:grid;place-items:center;padding:24px;background:#0b0b0c;color:#fff}
+    main{width:min(520px,100%);padding:28px;border:1px solid rgba(255,255,255,.12);border-radius:28px;background:rgba(255,255,255,.06);box-shadow:0 24px 70px rgba(0,0,0,.25)}
+    .logo{font-size:15px;font-weight:700;color:#c838ed;margin-bottom:14px}
+    h1{font-size:30px;letter-spacing:-.03em;margin:0 0 10px}
+    p{font-size:16px;line-height:1.5;color:rgba(255,255,255,.68);margin:0 0 18px}
+    button,a.btn{display:flex;width:100%;min-height:52px;align-items:center;justify-content:center;border:0;border-radius:18px;background:#c838ed;color:#fff;font:inherit;font-weight:700;text-decoration:none;padding:0 18px}
+    code{display:block;overflow-wrap:anywhere;background:rgba(255,255,255,.07);padding:12px 14px;border-radius:14px;color:rgba(255,255,255,.8);margin-top:16px}
+    .small{font-size:13px;margin-top:18px}
+    @media(prefers-color-scheme:light){body{background:#f5f5f7;color:#111}main{background:#fff;border-color:#e5e5ea}.logo{color:#a72ed0}p{color:#666}code{background:#f1f1f4;color:#444}}
+  </style>
+</head>
+<body>
+<main>
+  <div class="logo">Юмма × ЮMoney</div>
+  <h1 id="title">Подключение к ЮMoney</h1>
+  <p id="text">Эта страница используется как безопасный HTTPS callback для OAuth. Данные входа здесь не запрашиваются и не сохраняются.</p>
+  <a id="openApp" class="btn" href="yoomma://oauth">Вернуться в приложение</a>
+  <code id="status">Ожидание ответа ЮMoney…</code>
+  <p class="small">Если приложение не открылось автоматически, нажмите кнопку выше.</p>
+</main>
+<script>
+  const params = new URLSearchParams(location.search);
+  const hash = new URLSearchParams(location.hash.replace(/^#/,''));
+  const merged = new URLSearchParams(params);
+  for (const [k,v] of hash) if (!merged.has(k)) merged.set(k,v);
+
+  const suffix = merged.toString();
+  const deepLink = 'yoomma://oauth' + (suffix ? '?' + suffix : '');
+  const button = document.getElementById('openApp');
+  const status = document.getElementById('status');
+  const title = document.getElementById('title');
+  const text = document.getElementById('text');
+
+  button.href = deepLink;
+
+  if (merged.has('error')) {
+    title.textContent = 'ЮMoney вернул ошибку';
+    text.textContent = merged.get('error_description') || merged.get('error') || 'Авторизация не завершена.';
+    status.textContent = 'Можно вернуться в приложение.';
+  } else if (merged.has('code') || merged.has('access_token')) {
+    title.textContent = 'Почти готово';
+    text.textContent = 'Ответ ЮMoney получен. Возвращаем вас в приложение.';
+    status.textContent = 'Открываем Юмму…';
+    setTimeout(() => { location.href = deepLink; }, 250);
+  } else {
+    status.textContent = 'Callback готов.';
+  }
+</script>
+</body>
+</html>
